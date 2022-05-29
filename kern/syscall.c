@@ -288,6 +288,10 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	case SYS_env_destroy:
 		return sys_env_destroy(curenv->env_id);
 		break;
+	case SYS_yield:
+		sys_yield();
+		return 0;
+		break;
 
 	default:
 		return -E_INVAL;
