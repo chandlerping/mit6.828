@@ -85,7 +85,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		return sys_getenvid();
 		break;
 	case SYS_env_destroy:
-		return sys_env_destroy(curenv->env_id);
+		return sys_env_destroy((envid_t)a1);
 		break;
 
 	default:
