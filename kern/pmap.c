@@ -305,26 +305,27 @@ page_init(void)
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
-	pages[0].pp_ref = 1;
-    pages[0].pp_link = NULL;
 	size_t i;
-    size_t kernel_end_page = PADDR(boot_alloc(0)) / PGSIZE;
-	size_t mpentry = MPENTRY_PADDR / PGSIZE;
-    for (i = 1; i < npages; i++) {
-        if (i >= npages_basemem && i < kernel_end_page) {
-            pages[i].pp_ref = 1;
-            pages[i].pp_link = NULL;
-        } 
-		else if (i == mpentry) {
-			pages[i].pp_ref = 1;
-            pages[i].pp_link = NULL;
-		} 
-		else {
-            pages[i].pp_ref = 0;
-            pages[i].pp_link = page_free_list;
-            page_free_list = &pages[i];
-        }
-    }
+	for (i = 0; i < npages; i++) {
+		pages[i].pp_ref = 0;
+		pages[i].pp_link = NULL;
+		// pages[i].pp_link = page_free_list;
+		// page_free_list = &pages[i];
+
+		physaddr_t pa = page2pa(&pages[i]);
+		if (pa >= PADDR(envs) && pa < PADDR(envs) + PTSIZE)
+			continue;
+		else if (pa == MPENTRY_PADDR)
+			continue;
+		else if (pa >= PGSIZE && pa < npages_basemem * PGSIZE) {
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
+		else if (pa >= (physaddr_t)pages + npages  * sizeof(struct PageInfo) - 0xf0000000) {
+			pages[i].pp_link = page_free_list;
+			page_free_list = &pages[i];
+		}
+	}
 }
 
 //
