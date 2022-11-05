@@ -191,17 +191,18 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	int ret = envid2env(envid, &this_env, 1);
 	if (ret < 0)
 		return ret;
-	if (va >= (void *)UTOP || ROUNDDOWN(va, PGSIZE) != va)
+	if (va >= (void *)UTOP || (ROUNDDOWN(va, PGSIZE) != va))
 		return -E_INVAL;
-	if (((perm | PTE_U | PTE_P) != perm) || ((perm & (PTE_U | PTE_P | PTE_AVAIL | PTE_W)) != perm))
+	int flag = PTE_U | PTE_P;
+	if ((perm & flag) != flag)
 		return -E_INVAL;
 	struct PageInfo *new_page = page_alloc(1);
 	if (new_page == NULL)
 		return -E_NO_MEM;
-	new_page->pp_ref++;
-	if (page_insert(this_env->env_pgdir, new_page, va, perm) == -E_NO_MEM) {
+	int ret_1 = page_insert(this_env->env_pgdir, new_page, va, perm);
+	if (ret_1 < 0) {
 		page_free(new_page);
-		return -E_NO_MEM;
+		return ret_1;
 	}
 	return 0;
 
@@ -275,7 +276,7 @@ sys_page_unmap(envid_t envid, void *va)
 	int ret = envid2env(envid, &this_env, 1);
 	if (ret < 0)
 		return ret;
-	if (va >= (void *)UTOP || ROUNDDOWN(va, PGSIZE) != va)
+	if (va >= (void *)UTOP || (ROUNDDOWN(va, PGSIZE) != va))
 		return -E_INVAL;
 	page_remove(this_env->env_pgdir, va);
 	return 0;
