@@ -48,6 +48,13 @@ bc_pgfault(struct UTrapframe *utf)
 	// the disk.
 	//
 	// LAB 5: you code here:
+	addr = ROUNDDOWN(addr, PGSIZE);
+	int ret = sys_page_alloc(0, addr, PTE_U | PTE_W | PTE_P);
+	if (ret < 0)
+		panic("sys_page_alloc error");
+	int ret_1 = ide_read(blockno * BLKSECTS, addr, BLKSECTS);
+	if (ret_1 < 0)
+		panic("ide_read error");
 
 	// Clear the dirty bit for the disk block page since we just read the
 	// block from disk
@@ -77,7 +84,16 @@ flush_block(void *addr)
 		panic("flush_block of bad va %08x", addr);
 
 	// LAB 5: Your code here.
-	panic("flush_block not implemented");
+	// panic("flush_block not implemented");
+	if (!va_is_mapped(addr) || !va_is_dirty(addr))
+		return;
+	addr = ROUNDDOWN(addr, PGSIZE);
+	int ret = ide_write(blockno * BLKSECTS, addr, BLKSECTS);
+	if (ret < 0)
+		panic("ide_write error");
+	int ret_1 = sys_page_map(0, addr, 0, addr, PTE_P | PTE_W | PTE_U);
+	if (ret_1 < 0)
+		panic("sys_page_map error");
 }
 
 // Test that the block cache works, by smashing the superblock and
