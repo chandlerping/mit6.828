@@ -66,12 +66,13 @@ alloc_block(void)
 	int blockno = 0;
 	while (blockno < super->s_nblocks && !block_is_free(blockno))
 		blockno++;
-	if (blockno == super->s_nblocks)
+
+	if (blockno >= super->s_nblocks)
 		return -E_NO_DISK;
-	if (blockno == 0)
-		panic("attempt to free zero block");
-	bitmap[blockno / 32] &= 0 << (blockno % 32);
-	flush_block(&bitmap[blockno]);
+
+	bitmap[blockno / 32] &= ~(1 << (blockno % 32));
+	// flush_block(diskaddr(2 + (blockno / 32) / NINDIRECT));
+	flush_block(diskaddr(blockno));
 	return blockno;
 }
 

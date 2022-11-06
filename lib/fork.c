@@ -68,7 +68,10 @@ duppage(envid_t envid, unsigned pn)
 	// LAB 4: Your code here.
 	// panic("duppage not implemented");
 	void *addr = (void *)(pn * PGSIZE);
-	if (uvpt[pn] & (PTE_W | PTE_COW)) {
+	if (uvpt[pn] & PTE_SHARE) {
+		sys_page_map(0, addr, envid, addr, PTE_SYSCALL);
+	}
+	else if (uvpt[pn] & (PTE_W | PTE_COW)) {
 		if (sys_page_map(0, addr, envid, addr, PTE_COW | PTE_U | PTE_P) < 0)
 			panic("sys_page_map child error");
 		if (sys_page_map(0, addr, 0, addr, PTE_COW | PTE_U | PTE_P) < 0)
@@ -126,6 +129,7 @@ fork(void)
 int
 sfork(void)
 {
-	panic("sfork not implemented");
+	// panic("sfork not implemented");
+	
 	return -E_INVAL;
 }
