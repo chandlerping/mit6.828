@@ -22,6 +22,8 @@ struct pci_func {
     uint8_t irq_line;
 };
 
+struct pci_driver;
+
 struct pci_bus {
     struct pci_func *parent_bridge;
     uint32_t busno;
@@ -29,5 +31,6 @@ struct pci_bus {
 
 int  pci_init(void);
 void pci_func_enable(struct pci_func *f);
+
 
 #endif

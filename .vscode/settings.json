@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "assert.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "pci.h": "c"
     }
 }
